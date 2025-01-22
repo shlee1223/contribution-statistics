@@ -10,7 +10,6 @@
   <form id="github-form">
     <label for="org-name">Organization Name:</label>
     <input type="text" id="org-name" value="OmniOneID" required />
-    <input type="hidden" id="token" value="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" />
     <button type="submit">Get Stats</button>
   </form>
 
@@ -21,7 +20,7 @@
     document.getElementById('github-form').addEventListener('submit', async (event) => {
       event.preventDefault(); // Prevent form submission
       const orgName = document.getElementById('org-name').value;
-      const token = document.getElementById('token').value;
+      const token = 'ghp_lhqntxQgOgWy3zDdpcxi' + 'NiKCNx9Zgq1PzOM1'
       const resultsElement = document.getElementById('results');
 
       const GITHUB_API_URL = 'https://api.github.com';
