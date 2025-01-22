@@ -1,5 +1,5 @@
-let clientId = null
-let clientSecret = null
+let clientId = "Ov23liUS2fwdHjW8rRtj"
+let clientSecret = "c399ec5e2728328adeebb8f205fba78b1194e655"
 
 function httpGetAsync(url) {
   if (clientId  && clientSecret)
