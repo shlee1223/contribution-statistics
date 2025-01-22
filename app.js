@@ -2,8 +2,7 @@ let clientId = "Ov23liUS2fwdHjW8rRtj"
 let clientSecret = "c399ec5e2728328adeebb8f205fba78b1194e655"
 
 function httpGetAsync(url) {
-  if (clientId  && clientSecret)
-    url += "?client_id="+clientId+"&client_secret="+clientSecret
+  url += "?client_id="+clientId+"&client_secret="+clientSecret
   return new Promise((resolve, reject) => {
     const xmlHttp = new XMLHttpRequest()
     xmlHttp.onloadend = () => {
