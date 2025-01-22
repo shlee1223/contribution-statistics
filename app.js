@@ -33,7 +33,7 @@ function getRepos(org) {
 
 function getRepoContributors(org, repo) {
   return new Promise((resolve, reject) => {
-    const url = "https://api.github.com/repos/"+org+"/"+repo+"/stats/contributors"
+    const url = "https://api.github.com/repos/"+org+"/"+repo+"/contributors"
     httpGetAsync(url).then(res => {
       const json = JSON.parse(res)
       const developers = []
