@@ -83,15 +83,37 @@
         return prs;
       }
 
+      // Fetch issues for a specific repository
+      async function fetchIssues(repoName) {
+        let issues = [];
+        let page = 1;
+
+        while (true) {
+          const url = `${GITHUB_API_URL}/repos/${orgName}/${repoName}/issues?state=all&page=${page}&per_page=100`;
+          const response = await fetch(url, { headers });
+          if (!response.ok) {
+            console.warn(`Failed to fetch issues for ${repoName}: ${response.statusText}`);
+            return [];
+          }
+          const data = await response.json();
+          if (data.length === 0) break;
+          issues = issues.concat(data);
+          page++;
+        }
+
+        return issues;
+      }
+
       // Update user statistics
-      function updateUserStats(userId, contributions = 0, pullRequests = 0) {
+      function updateUserStats(userId, commits = 0, pullRequests = 0, issues = 0) {
         if(userId == 'github-actions[bot]' || userId == 'k3255' || userId == 'djpark0402' || userId == 'jinhwankim6557' || userId == 'mikyung-lee' || userId == 'gw-nam' || userId == 'InkyuRaon' || userId == 'yoongyu-lee' || userId == 'black-billed-magpie' || userId == 'jhkim5981' || userId == 'sjyeo98' || userId == 'JoshuaLeeshock' || userId == 'woosang-raon' || userId == 'ejlee8796' || userId == 'crham' || userId == 'omnione-raon' || userId == 'shlee1223') { return; }
 
         if (!userStats[userId]) {
-          userStats[userId] = { commits: 0, pullRequests: 0 };
+          userStats[userId] = { commits: 0, pullRequests: 0, issues: 0 };
         }
-        userStats[userId].commits += contributions;
+        userStats[userId].commits += commits;
         userStats[userId].pullRequests += pullRequests;
+        userStats[userId].issues += issues;
       }
 
       try {
@@ -108,14 +130,23 @@
             for (const contributor of contributors) {
               const userId = contributor.login;
               const contributions = contributor.contributions;
-              updateUserStats(userId, contributions, 0);
+              updateUserStats(userId, contributions, 0, 0);
             }
 
             // Fetch pull requests
             const pullRequests = await fetchPullRequests(repoName);
             for (const pr of pullRequests) {
               const userId = pr.user.login;
-              updateUserStats(userId, 0, 1);
+              updateUserStats(userId, 0, 1, 0);
+            }
+
+            // Fetch issues
+            const issues = await fetchIssues(repoName);
+            for (const issue of issues) {
+              if (!issue.pull_request) { // Exclude PRs
+                const userId = issue.user.login;
+                updateUserStats(userId, 0, 0, 1);
+              }
             }
           }
         }
