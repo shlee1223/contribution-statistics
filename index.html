@@ -9,7 +9,9 @@
   <h1>GitHub Contribution Stats</h1>
   <form id="github-form">
     <label for="org-name">Organization Name:</label>
-    <input type="text" id="org-name" value="OmniOneID" required />
+    <input type="text" id="org-name" style="margin-bottom: 5px" value="OmniOneID" required /><br>
+    <label for="org-name">Date(From ~ To):</label>
+    <input type="date" id="from-date" value="2024-09-01" required /> ~ <input type="date" id="to-date" value="2025-12-31" required /><br>
     <button type="submit">Get Stats</button>
   </form>
 
@@ -20,6 +22,9 @@
     document.getElementById('github-form').addEventListener('submit', async (event) => {
       event.preventDefault(); // Prevent form submission
       const orgName = document.getElementById('org-name').value;
+      const fromDate = document.getElementById('from-date').value;
+      const toDate = document.getElementById('to-date').value;
+
       const token = 'ghp_lhqntxQgOgWy3zDdpcxi' + 'NiKCNx9Zgq1PzOM1'
       const resultsElement = document.getElementById('results');
 
@@ -52,18 +57,37 @@
       }
 
       // Fetch contributors for a specific repository
-      async function fetchContributors(repoName) {
-        const url = `${GITHUB_API_URL}/repos/${orgName}/${repoName}/contributors`;
-        const response = await fetch(url, { headers });
-        if (!response.ok) {
-          console.warn(`Failed to fetch contributors for ${repoName}: ${response.statusText}`);
-          return [];
+      async function fetchContributors(repoName, startDate, endDate) {
+        let contributionsMap = new Map();
+        let page = 1;
+
+        while (true) {
+          const url = `${GITHUB_API_URL}/repos/${orgName}/${repoName}/commits?since=${startDate}T00:00:00Z&until=${endDate}T23:59:59Z&page=${page}&per_page=100`;
+          const response = await fetch(url, { headers });
+          if (!response.ok) {
+            console.warn(`Failed to fetch commits for ${repoName}: ${response.statusText}`);
+            return [];
+          }
+          const data = await response.json();
+          if (data.length === 0) break;
+
+          // 각 커밋의 author 정보를 가져와서 contributionsMap에 추가
+          data.forEach(commit => {
+            if (commit.author && commit.author.login) {
+              const username = commit.author.login;
+              contributionsMap.set(username, (contributionsMap.get(username) || 0) + 1);
+            }
+          });
+
+          page++;
         }
-        return await response.json();
+
+        // contributor 형식의 객체 배열 반환
+        return Array.from(contributionsMap, ([login, contributions]) => ({ login, contributions }));
       }
 
       // Fetch pull requests for a specific repository
-      async function fetchPullRequests(repoName) {
+      async function fetchPullRequests(repoName, startDate, endDate) {
         let prs = [];
         let page = 1;
 
@@ -76,20 +100,27 @@
           }
           const data = await response.json();
           if (data.length === 0) break;
-          prs = prs.concat(data);
+
+          // startDate, endDate 기준 PR 필터링
+          const filteredData = data.filter(pr => new Date(pr.created_at) <= new Date(`${endDate}T23:59:59Z`)).filter(pr => new Date(pr.created_at) >= new Date(`${startDate}T23:59:59Z`));
+
+          prs = prs.concat(filteredData);
           page++;
+
+          // API는 created_at 기준 오름차순 정렬을 기본으로 하므로, 더 이상 endDate 이후의 데이터가 없으면 종료
+          if (filteredData.length < data.length) break;
         }
 
         return prs;
       }
 
       // Fetch issues for a specific repository
-      async function fetchIssues(repoName) {
+      async function fetchIssues(repoName, startDate, endDate) {
         let issues = [];
         let page = 1;
 
         while (true) {
-          const url = `${GITHUB_API_URL}/repos/${orgName}/${repoName}/issues?state=all&page=${page}&per_page=100`;
+          const url = `${GITHUB_API_URL}/repos/${orgName}/${repoName}/issues?state=all&page=${page}&per_page=100&since=${startDate}T00:00:00Z`;
           const response = await fetch(url, { headers });
           if (!response.ok) {
             console.warn(`Failed to fetch issues for ${repoName}: ${response.statusText}`);
@@ -97,8 +128,15 @@
           }
           const data = await response.json();
           if (data.length === 0) break;
-          issues = issues.concat(data);
+
+          // endDate보다 작은 날짜만 필터링
+          const filteredData = data.filter(issue => new Date(issue.created_at) <= new Date(`${endDate}T23:59:59Z`));
+          
+          issues = issues.concat(filteredData);
           page++;
+
+          // API는 created_at 기준 오름차순 정렬을 기본으로 하므로, 더 이상 endDate 이후의 데이터가 없으면 종료
+          if (filteredData.length < data.length) break;
         }
 
         return issues;
@@ -106,7 +144,8 @@
 
       // Update user statistics
       function updateUserStats(userId, commits = 0, pullRequests = 0, issues = 0) {
-        if(userId == 'github-actions[bot]' || userId == 'k3255' || userId == 'djpark0402' || userId == 'jinhwankim6557' || userId == 'mikyung-lee' || userId == 'gw-nam' || userId == 'InkyuRaon' || userId == 'yoongyu-lee' || userId == 'black-billed-magpie' || userId == 'jhkim5981' || userId == 'sjyeo98' || userId == 'JoshuaLeeshock' || userId == 'woosang-raon' || userId == 'ejlee8796' || userId == 'crham' || userId == 'omnione-raon' || userId == 'shlee1223') { return; }
+        if(userId == 'OmniOneID' || userId == 'github-actions[bot]' || userId == 'k3255' || userId == 'djpark0402' || userId == 'jinhwankim6557' || userId == 'mikyung-lee' || userId == 'gw-nam' || userId == 'InkyuRaon' || userId == 'yoongyu-lee' || userId == 'black-billed-magpie' || userId == 'jhkim5981' || userId == 'sjyeo98' || userId == 'JoshuaLeeshock' || userId == 'woosang-raon' || userId == 'ejlee8796' || userId == 'crham' || userId == 'omnione-raon' || userId == 'shlee1223') { return; }
+        if(typeof userId == undefined || userId == null || userId == "") { return; } // suspended로 404가 뜨는 사용자 제거
 
         if (!userStats[userId]) {
           userStats[userId] = { commits: 0, pullRequests: 0, issues: 0 };
@@ -126,7 +165,7 @@
             resultsElement.textContent = `Processing repository: ${repoName}...`;
 
             // Fetch contributors
-            const contributors = await fetchContributors(repoName);
+            const contributors = await fetchContributors(repoName, fromDate, toDate);
             for (const contributor of contributors) {
               const userId = contributor.login;
               const contributions = contributor.contributions;
@@ -134,14 +173,14 @@
             }
 
             // Fetch pull requests
-            const pullRequests = await fetchPullRequests(repoName);
+            const pullRequests = await fetchPullRequests(repoName, fromDate, toDate);
             for (const pr of pullRequests) {
               const userId = pr.user.login;
               updateUserStats(userId, 0, 1, 0);
             }
 
             // Fetch issues
-            const issues = await fetchIssues(repoName);
+            const issues = await fetchIssues(repoName, fromDate, toDate);
             for (const issue of issues) {
               if (!issue.pull_request) { // Exclude PRs
                 const userId = issue.user.login;
