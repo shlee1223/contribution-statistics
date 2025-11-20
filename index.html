@@ -144,7 +144,7 @@
 
       // Update user statistics
       function updateUserStats(userId, commits = 0, pullRequests = 0, issues = 0) {
-        if(userId == 'OmniOneID' || userId == 'github-actions[bot]' || userId == 'k3255' || userId == 'djpark0402' || userId == 'jinhwankim6557' || userId == 'mikyung-lee' || userId == 'gw-nam' || userId == 'InkyuRaon' || userId == 'yoongyu-lee' || userId == 'black-billed-magpie' || userId == 'jhkim5981' || userId == 'sjyeo98' || userId == 'JoshuaLeeshock' || userId == 'woosang-raon' || userId == 'ejlee8796' || userId == 'crham' || userId == 'omnione-raon' || userId == 'shlee1223') { return; }
+        //if(userId == 'OmniOneID' || userId == 'github-actions[bot]' || userId == 'k3255' || userId == 'djpark0402' || userId == 'jinhwankim6557' || userId == 'mikyung-lee' || userId == 'gw-nam' || userId == 'InkyuRaon' || userId == 'yoongyu-lee' || userId == 'black-billed-magpie' || userId == 'jhkim5981' || userId == 'sjyeo98' || userId == 'JoshuaLeeshock' || userId == 'woosang-raon' || userId == 'ejlee8796' || userId == 'crham' || userId == 'omnione-raon' || userId == 'shlee1223') { return; }
         if(typeof userId == undefined || userId == null || userId == "") { return; } // suspended로 404가 뜨는 사용자 제거
 
         if (!userStats[userId]) {
